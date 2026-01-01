@@ -4,23 +4,26 @@ using Microsoft.EntityFrameworkCore;
 using NZWalks.API.Data;
 using NZWalks.API.DataTransferObject;
 using NZWalks.API.Models;
+using NZWalks.API.Repositories.Interfaces;
 
 namespace NZWalks.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class RegionController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IRegionRepository _regionRepo;
     private readonly ILogger<RegionController> _logger;
-    public RegionController(ApplicationDbContext context, ILogger<RegionController> logger)
+    public RegionController(IRegionRepository regionRepo, ILogger<RegionController> logger)
     {
-        _context = context;
+        _regionRepo = regionRepo;
         _logger = logger;
     }
     [HttpGet]
     public async Task<ActionResult<List<Region>>> GetAll()
     {
-        var regionsModel = await _context.Regions.ToListAsync();
+        var regionsModel = await _regionRepo.GetAllAsync();
+        if(regionsModel is null)
+            return NotFound("Regions not found in database.");
         var regionsDto = new List<RegionDto>();
         regionsDto = regionsModel.Select(t => new RegionDto()
         {
@@ -35,7 +38,7 @@ public class RegionController : ControllerBase
     [Route("{id:guid}")]
     public async Task<ActionResult<Region>> GetById([FromRoute] Guid id)
     {
-        var regionModel = await _context.Regions.FindAsync(id);
+        var regionModel = await _regionRepo.GetByIdAsync(id);
         if (regionModel is null)
             return NotFound($"Region not found in database with this {id}");
         return Ok(regionModel);
@@ -54,8 +57,7 @@ public class RegionController : ControllerBase
             RegionImageUrl = addRegionDto.RegionImageUrl,
             Id = Guid.NewGuid()
         };
-        await _context.Regions.AddAsync(regionModel);
-        await _context.SaveChangesAsync();
+        await _regionRepo.CreateAsync(regionModel);
         var regionDto = new RegionDto()
         {
             Id = regionModel.Id,
@@ -71,14 +73,13 @@ public class RegionController : ControllerBase
     public async Task<ActionResult<RegionDto>> PutRegion([FromRoute] Guid id,
         [FromBody] UpdateRegionDtoRequest updateRegionDtoRequest)
     {
-        var regionInDb = await _context.Regions.FindAsync(id);
+        var regionInDb = await _regionRepo.GetByIdAsync(id);
         if (regionInDb is null)
             return NotFound("Region not found in database.");
         regionInDb.Code = updateRegionDtoRequest.Code;
         regionInDb.Name = updateRegionDtoRequest.Name;
         regionInDb.RegionImageUrl = updateRegionDtoRequest.RegionImageUrl;
-        _context.Regions.Update(regionInDb);
-        await _context.SaveChangesAsync();
+        await _regionRepo.UpdateAsync(regionInDb);
         var regionDto = new RegionDto
         {
             Id = regionInDb.Id,
@@ -93,11 +94,10 @@ public class RegionController : ControllerBase
     [Route("{id:guid}")]
     public async Task<ActionResult> DeleteRegion([FromRoute] Guid id)
     {
-        var regionInDb = await _context.Regions.FindAsync(id);
+        var regionInDb = await _regionRepo.GetByIdAsync(id);
         if (regionInDb is null)
             return NotFound("Region element not found f or deleted in database.");
-        _context.Regions.Remove(regionInDb);
-        await _context.SaveChangesAsync();
+        await _regionRepo.DeleteAsync(regionInDb);
         return Ok($"region {regionInDb.Name} deleted.");
     }
 }
