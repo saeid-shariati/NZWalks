@@ -48,12 +48,12 @@ public class SqlBaseRepository<T>:IBaseRepository<T> where T:class
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(T entity)
+    public async Task<bool> DeleteAsync(Guid id)
     {
-        var entityInDb = await FindElementAsync(entity);
+        var entityInDb = await GetByIdAsync(id);
         if (entityInDb == null)
             return false;
-        _dbSet.Remove(entity);
+        _dbSet.Remove(entityInDb);
         await CommitAsync();
         return true;
     }

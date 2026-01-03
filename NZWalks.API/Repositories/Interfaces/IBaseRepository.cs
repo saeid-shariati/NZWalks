@@ -10,5 +10,5 @@ public interface IBaseRepository<T> where T:class
     Task<T?> FindElementAsync(T entity);
     Task<T> CreateAsync(T entity);
     Task<T> UpdateAsync(T entity);
-    Task<bool> DeleteAsync(T entity);
+    Task<bool> DeleteAsync(Guid id);
 }
