@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc;
+﻿
 using Microsoft.EntityFrameworkCore;
 using NZWalks.API.Data;
 using NZWalks.API.Repositories.Interfaces;
@@ -16,39 +15,39 @@ public class SqlBaseRepository<T>:IBaseRepository<T> where T:class
         _context = context;
         _dbSet = _context.Set<T>();
     }
-    public async Task<IEnumerable<T>?> GetAllAsync()
+    public virtual async Task<IEnumerable<T>?> GetAllAsync()
     {
         return await _dbSet.ToListAsync();
     }
 
-    public async Task<T?> GetByIdAsync(Guid id)
+    public virtual async Task<T?> GetByIdAsync(Guid id)
     {
         var entityResult = await _dbSet.FindAsync(id);
         return entityResult;
     }
 
-    public async Task<T?> FindElementAsync(T entity)
+    public virtual async Task<T?> FindElementAsync(T entity)
     {
         var entityresult =await _dbSet.FindAsync(entity);
         return entityresult;
     }
 
 
-    public async Task<T> CreateAsync(T entity)
+    public virtual async Task<T> CreateAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
         await CommitAsync();
         return entity;
     }
 
-    public async Task<T> UpdateAsync(T entity)
+    public virtual async Task<T> UpdateAsync(T entity)
     {
         _dbSet.Update(entity);
         await CommitAsync();
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public virtual async Task<bool> DeleteAsync(Guid id)
     {
         var entityInDb = await GetByIdAsync(id);
         if (entityInDb == null)

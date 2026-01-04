@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using NZWalks.API.Application.IServices;
+using NZWalks.API.Application.Services;
 using NZWalks.API.Data;
 using NZWalks.API.Mappings;
 using NZWalks.API.Models;
@@ -9,6 +11,16 @@ using NZWalks.API.Repositories.RepositoryClasses;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+builder.Services.AddScoped<IBaseRepository<Region>,SqlBaseRepository<Region>>();
+builder.Services.AddScoped<IBaseService<Walk>, BaseService<Walk>>();
+builder.Services.AddScoped<IRegionService, RegionService>();
+builder.Services.AddScoped<IDifficultyService, DifficultyService>();
+builder.Services.AddScoped<IDifficultyRepository, DifficultyRepository>();
+builder.Services.AddScoped<IWalkRepository, WalkRepository>();
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(SqlBaseRepository<>));
+
+//Service dependencies definition. 
+builder.Services.AddScoped<IBaseService<Region>,BaseService<Region>>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddMaps(typeof(Program).Assembly);
